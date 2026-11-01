@@ -1,0 +1,40 @@
+name: Build APK from Zip
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: 
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Unzip Source Code
+      run: |
+        # Unzips the uploaded file into the current workspace
+        unzip "virtual-camera (4).zip" -d ./source
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Grant Execute Permission for Gradlew
+      run: chmod +x ./source/gradlew
+      # If your gradlew file is in a subfolder inside the zip, adjust the path accordingly (e.g., ./source/MyProject/gradlew)
+
+    - name: Build Debug APK with Gradle
+      run: ./source/gradlew assembleDebug
+      # This command must be run from the directory containing the gradlew file
+
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: virtual-camera-debug-apk
+        path: ./source/app/build/outputs/apk/debug/*.apk
+        # Adjust the path if your app module is named differently or is nested deeper
