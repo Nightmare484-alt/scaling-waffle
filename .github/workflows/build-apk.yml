@@ -15,7 +15,6 @@ jobs:
 
     - name: Unzip Source Code
       run: |
-        # Unzips the uploaded file into the current workspace
         unzip "virtual-camera (4).zip" -d ./source
 
     - name: Set up JDK 17
@@ -24,17 +23,22 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+
     - name: Grant Execute Permission for Gradlew
-      run: chmod +x ./source/gradlew
-      # If your gradlew file is in a subfolder inside the zip, adjust the path accordingly (e.g., ./source/MyProject/gradlew)
+      run: |
+        # This command finds the gradlew file anywhere inside the source directory
+        find ./source -name "gradlew" -exec chmod +x {} \;
 
     - name: Build Debug APK with Gradle
-      run: ./source/gradlew assembleDebug
-      # This command must be run from the directory containing the gradlew file
+      run: |
+        # This finds the directory containing gradlew and runs the build there
+        cd $(find ./source -name "gradlew" -exec dirname {} \; | head -n 1) && ./gradlew assembleDebug
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: virtual-camera-debug-apk
-        path: ./source/app/build/outputs/apk/debug/*.apk
-        # Adjust the path if your app module is named differently or is nested deeper
+        # The APK path can also be found dynamically
+        path: $(find ./source -name "*.apk" -path "*/debug/*" | head -n 1)
