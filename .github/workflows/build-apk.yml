@@ -40,5 +40,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: virtual-camera-debug-apk
-        # The APK path can also be found dynamically
-        path: $(find ./source -name "*.apk" -path "*/debug/*" | head -n 1)
+        # This uses a wildcard to find any debug APK in the build output folder
+        path: "**/build/outputs/apk/debug/*.apk"
